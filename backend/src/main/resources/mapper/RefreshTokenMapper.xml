@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shop.api.auth.RefreshTokenMapper">
+
+    <insert id="insert">
+        insert into tb_refresh_tokens (token_hash, user_id, expires_at)
+        values (#{tokenHash}, #{userId}, #{expiresAt})
+    </insert>
+
+    <select id="findByHash" resultType="com.shop.api.auth.RefreshTokenRecord">
+        select token_hash, user_id, expires_at
+        from tb_refresh_tokens
+        where token_hash = #{tokenHash}
+    </select>
+
+    <delete id="deleteByHash">
+        delete from tb_refresh_tokens where token_hash = #{tokenHash}
+    </delete>
+
+    <delete id="deleteExpiredByUserId">
+        delete from tb_refresh_tokens where user_id = #{userId} and expires_at &lt; #{now}
+    </delete>
+</mapper>

@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: shop-api
+  profiles:
+    default: local
+  jackson:
+    time-zone: Asia/Seoul
+
+server:
+  port: 8080
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+app:
+  jwt:
+    issuer: shop-api
+    access-token-validity-seconds: 10800
+    refresh-token-validity-seconds: 1209600
+  cookie:
+    secure: false
+  cors:
+    allowed-origins: http://localhost:5173

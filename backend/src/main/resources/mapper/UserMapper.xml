@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shop.api.user.UserMapper">
+
+    <select id="findByUserId" resultType="com.shop.api.user.domain.User">
+        select u.user_id,
+               u.passwd,
+               u.user_name,
+               u.gender,
+               u.birth,
+               u.email,
+               u.phone,
+               u.zip_code,
+               u.addr,
+               u.addr_dtl,
+               u.role_id,
+               r.role_name,
+               u.create_at
+        from tb_users u
+        left join user_roles r on r.role_id = u.role_id
+        where u.user_id = #{userId}
+    </select>
+</mapper>
