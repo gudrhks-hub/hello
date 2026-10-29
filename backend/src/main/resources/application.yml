@@ -1,13 +1,18 @@
 spring:
   application:
     name: shop-api
-  profiles:
-    default: local
-  config:
-    # backend/.env 가 있으면 DB 접속 정보 등을 읽는다(없으면 무시). 환경 변수가 우선한다.
-    import: optional:file:.env[.properties]
   jackson:
     time-zone: Asia/Seoul
+  datasource:
+    # PostgreSQL 접속 정보. 호스트, DB 이름, 아이디, 비밀번호를 직접 입력한다.
+    url: jdbc:postgresql://호스트:5432/DB이름
+    username: 아이디
+    password: 비밀번호
+    driver-class-name: org.postgresql.Driver
+  sql:
+    init:
+      # 실제 DB 를 지우지 않도록 자동 실행하지 않는다. db/postgresql/*.sql 을 직접 적용한다.
+      mode: never
 
 server:
   port: 8080
@@ -19,6 +24,8 @@ mybatis:
 
 app:
   jwt:
+    # JWT 서명 키(Base64, 디코딩 후 32바이트 이상). 운영 전에 openssl rand -base64 48 로 만든 값으로 바꾼다.
+    secret: ZGV2LW9ubHktc2hvcC1hcGktand0LXNlY3JldC1rZXktZG8tbm90LXVzZS1pbi1wcm9k
     issuer: shop-api
     access-token-validity-seconds: 10800
     refresh-token-validity-seconds: 1209600

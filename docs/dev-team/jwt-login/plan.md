@@ -41,7 +41,7 @@
 ## 3.1 원본 DDL 위치
 
 - 사용자 제공 원본 DDL(`tb_users`, `user_roles`): **`docs/dev-team/jwt-login/ddl-original.sql`** (컬럼/타입/제약 변경 금지, D1)
-- 백엔드 반영본: `backend/src/main/resources/schema.sql`(local/test, H2), `backend/src/main/resources/db/postgresql/schema.sql`(PostgreSQL 수동 적용, 2026-10-29 MySQL에서 전환). 두 파일의 `tb_users`/`user_roles`는 원본과 동일해야 한다. 원본이 바뀌면 이 세 파일을 함께 갱신한다.
+- 백엔드 반영본: `backend/src/main/resources/schema.sql`(local 프로필/test, H2), `backend/src/main/resources/db/postgresql/schema.sql`(PostgreSQL 수동 적용, 2026-10-29 MySQL에서 전환). 두 파일의 `tb_users`/`user_roles`는 원본과 동일해야 한다. 원본이 바뀌면 이 세 파일을 함께 갱신한다.
 
 ## 4. 기술 스택 (기존 코드 없음 -> 아래로 확정)
 
