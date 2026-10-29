@@ -4,8 +4,9 @@ spring:
   jackson:
     time-zone: Asia/Seoul
   datasource:
-    # PostgreSQL 접속 정보. 호스트, DB 이름, 아이디, 비밀번호를 직접 입력한다.
-    url: jdbc:postgresql://호스트:5432/DB이름
+    # PostgreSQL(Supabase) 접속 정보. 아이디, 비밀번호를 직접 입력한다.
+    # 6543 은 트랜잭션 모드 풀러라 prepared statement 를 끈다(prepareThreshold=0). Supabase 는 SSL 필수.
+    url: jdbc:postgresql://aws-0-ap-northeast-2.pooler.supabase.com:6543/postgres?sslmode=require&prepareThreshold=0
     username: 아이디
     password: 비밀번호
     driver-class-name: org.postgresql.Driver
