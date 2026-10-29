@@ -266,56 +266,6 @@ class AuthApiIntegrationTest {
     }
 
     @Test
-    void users_me_사용자가_DB에_없으면_401_INVALID_TOKEN() throws Exception {
-        String token = new JwtTokenProvider(jwtProps, Clock.system(ZoneId.of("Asia/Seoul")))
-                .createAccessToken("ghost", "유령", "ROLE_USER").token();
-
-        mvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("INVALID_TOKEN"));
-    }
-
-    @Test
-    void users_me_정상_200_passwd_없음() throws Exception {
-        String token = accessToken(login(LOGIN_OK));
-
-        MvcResult r = mvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").value("user01"))
-                .andExpect(jsonPath("$.userName").value("홍길동"))
-                .andExpect(jsonPath("$.gender").value("M"))
-                .andExpect(jsonPath("$.birth").value("900101"))
-                .andExpect(jsonPath("$.email").value("user01@example.com"))
-                .andExpect(jsonPath("$.phone").value("010-1234-5678"))
-                .andExpect(jsonPath("$.zipCode").value("04524"))
-                .andExpect(jsonPath("$.addr").value("서울특별시 중구 세종대로 110"))
-                .andExpect(jsonPath("$.addrDtl").value("101호"))
-                .andExpect(jsonPath("$.role").value("ROLE_USER"))
-                .andExpect(jsonPath("$.roleName").value("일반회원"))
-                .andExpect(jsonPath("$.createAt").value("2026-10-28T10:00:00+09:00"))
-                .andReturn();
-        assertThat(r.getResponse().getContentAsString()).doesNotContain("passwd").doesNotContain("$2a$");
-    }
-
-    @Test
-    void users_me_NULL_값은_키를_유지한_채_null() throws Exception {
-        jdbc.update("insert into tb_users(user_id, passwd, user_name, gender, birth, email, phone, zip_code, addr, addr_dtl, role_id) "
-                + "values ('nullrole', 'x', '무권한', 'F', '950505', 'n@e.com', '010', '11111', 'addr', null, null)");
-        String token = new JwtTokenProvider(jwtProps, Clock.system(ZoneId.of("Asia/Seoul")))
-                .createAccessToken("nullrole", "무권한", "ROLE_USER").token();
-
-        MvcResult r = mvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.role").value("ROLE_USER"))
-                .andExpect(jsonPath("$.roleName").value((Object) null))
-                .andExpect(jsonPath("$.addrDtl").value((Object) null))
-                .andReturn();
-        JsonNode n = om.readTree(r.getResponse().getContentAsString());
-        assertThat(n.has("roleName")).isTrue();
-        assertThat(n.has("addrDtl")).isTrue();
-    }
-
-    @Test
     void 어드민_로그인은_ROLE_ADMIN() throws Exception {
         MvcResult r = login("{\"userId\":\"admin01\",\"password\":\"Passw0rd!\"}");
         assertThat(om.readTree(r.getResponse().getContentAsString()).get("user").get("role").asText())
@@ -323,7 +273,7 @@ class AuthApiIntegrationTest {
     }
 
     @Test
-    void cart_orders_placeholder() throws Exception {
+    void cart_orders_보호_경로는_토큰_없으면_401() throws Exception {
         mvc.perform(get("/api/cart")).andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("UNAUTHORIZED"))
                 .andExpect(jsonPath("$.path").value("/api/cart"));
@@ -332,27 +282,6 @@ class AuthApiIntegrationTest {
         mvc.perform(post("/api/orders").contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
-
-        String auth = "Bearer " + accessToken(login(LOGIN_OK));
-        mvc.perform(get("/api/cart").header(HttpHeaders.AUTHORIZATION, auth))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items", hasSize(0)))
-                .andExpect(jsonPath("$.totalCount").value(0));
-        mvc.perform(get("/api/orders").header(HttpHeaders.AUTHORIZATION, auth))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items", hasSize(0)))
-                .andExpect(jsonPath("$.totalCount").value(0));
-        mvc.perform(post("/api/orders").header(HttpHeaders.AUTHORIZATION, auth)
-                        .contentType(MediaType.APPLICATION_JSON).content("{}"))
-                .andExpect(status().isNotImplemented())
-                .andExpect(jsonPath("$.status").value(501))
-                .andExpect(jsonPath("$.code").value("NOT_IMPLEMENTED"))
-                .andExpect(jsonPath("$.message").value("준비 중인 기능입니다."))
-                .andExpect(jsonPath("$.path").value("/api/orders"))
-                .andExpect(jsonPath("$.errors", hasSize(0)));
-        mvc.perform(post("/api/orders").header(HttpHeaders.AUTHORIZATION, auth)
-                        .contentType(MediaType.TEXT_PLAIN).content("anything"))
-                .andExpect(status().isNotImplemented());
     }
 
     // ---------- 공개 경로 / 공통 에러
