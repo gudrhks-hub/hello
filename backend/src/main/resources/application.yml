@@ -3,6 +3,9 @@ spring:
     name: shop-api
   profiles:
     default: local
+  config:
+    # backend/.env 가 있으면 DB 접속 정보 등을 읽는다(없으면 무시). 환경 변수가 우선한다.
+    import: optional:file:.env[.properties]
   jackson:
     time-zone: Asia/Seoul
 

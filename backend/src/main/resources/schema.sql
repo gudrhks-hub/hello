@@ -1,4 +1,4 @@
--- local/test (H2, MySQL 모드) 전용. 운영은 db/mysql/schema-mysql.sql 을 수동 적용한다.
+-- local/test (H2, PostgreSQL 모드) 전용. PostgreSQL 은 db/postgresql/schema.sql 을 수동 적용한다.
 -- tb_users, user_roles 는 사용자 제공 원본 DDL(ddl-original.sql) 그대로이다.
 drop table if exists tb_refresh_tokens;
 drop table if exists tb_users;

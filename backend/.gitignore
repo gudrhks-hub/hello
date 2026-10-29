@@ -2,3 +2,6 @@
 build/
 .idea/
 *.iml
+
+# DB 접속 정보 등 로컬 비밀 값
+.env

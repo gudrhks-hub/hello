@@ -1,5 +1,7 @@
--- 운영(MySQL 8) 수동 적용용. 시드 데이터 미포함.
--- tb_users, user_roles 는 사용자 제공 원본 DDL(ddl-original.sql) 그대로이다.
+-- PostgreSQL 수동 적용용 스키마. 시드 데이터는 seed-dev.sql 에 따로 있다.
+-- tb_users, user_roles 는 사용자 제공 원본 DDL(docs/dev-team/jwt-login/ddl-original.sql) 그대로이다.
+-- 여러 번 실행해도 오류가 나지 않도록 if not exists 를 붙였다.
+
 create table if not exists tb_users(
  user_id    varchar(50)   not null, /*필수 값 지정 */
  passwd     varchar(200)  not null,
@@ -32,4 +34,4 @@ create table if not exists tb_refresh_tokens(
   create_at   timestamp    default current_timestamp,
   primary key(token_hash)
 );
-create index idx_refresh_tokens_user_id on tb_refresh_tokens(user_id);
+create index if not exists idx_refresh_tokens_user_id on tb_refresh_tokens(user_id);
