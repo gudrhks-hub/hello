@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 
 export default function Header() {
@@ -17,15 +17,6 @@ export default function Header() {
       <Link to="/" className="brand">
         Shop
       </Link>
-      <nav aria-label="주 메뉴" className="nav">
-        {user && (
-          <>
-            <NavLink to="/mypage">마이페이지</NavLink>
-            <NavLink to="/cart">장바구니</NavLink>
-            <NavLink to="/orders">구매내역</NavLink>
-          </>
-        )}
-      </nav>
       <div className="user">
         {user ? (
           <>

@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw'
-import type { ApiErrorBody, ErrorCode, TokenResponse, UserMe } from '../api/types'
+import type { ApiErrorBody, ErrorCode, TokenResponse } from '../api/types'
 
 const USER = { userId: 'user01', userName: '홍길동', role: 'ROLE_USER' }
 
@@ -21,7 +21,6 @@ const MESSAGES: Record<string, string> = {
   TOKEN_EXPIRED: '인증이 만료되었습니다.',
   INVALID_TOKEN: '유효하지 않은 인증 정보입니다.',
   REFRESH_TOKEN_INVALID: '다시 로그인해 주세요.',
-  NOT_IMPLEMENTED: '준비 중인 기능입니다.',
 }
 
 function errorResponse(
@@ -52,8 +51,8 @@ function tokenResponse(): TokenResponse {
   }
 }
 
-/** 보호 경로 인증 검사. 통과하면 null, 실패하면 401 응답 */
-function guard(request: Request) {
+/** 보호 경로 인증 검사. 통과하면 null, 실패하면 401 응답 (테스트에서 보호 API 흉내에 사용) */
+export function guard(request: Request) {
   const path = new URL(request.url).pathname
   const auth = request.headers.get('Authorization')
   if (!auth) return errorResponse(401, 'UNAUTHORIZED', path)
@@ -86,29 +85,4 @@ export const handlers = [
     state.sessionActive = false
     return new HttpResponse(null, { status: 204 })
   }),
-
-  http.get('/api/users/me', ({ request }) => {
-    const denied = guard(request)
-    if (denied) return denied
-    const me: UserMe = {
-      ...USER,
-      gender: 'M',
-      birth: '900101',
-      email: 'user01@example.com',
-      phone: '010-1234-5678',
-      zipCode: '04524',
-      addr: '서울특별시 중구 세종대로 110',
-      addrDtl: '101호',
-      roleName: '일반회원',
-      createAt: '2026-10-28T10:00:00+09:00',
-    }
-    return HttpResponse.json(me)
-  }),
-
-  http.get('/api/cart', ({ request }) => guard(request) ?? HttpResponse.json({ items: [], totalCount: 0 })),
-  http.get('/api/orders', ({ request }) => guard(request) ?? HttpResponse.json({ items: [], totalCount: 0 })),
-  http.post(
-    '/api/orders',
-    ({ request }) => guard(request) ?? errorResponse(501, 'NOT_IMPLEMENTED', '/api/orders'),
-  ),
 ]

@@ -1,9 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import App from '../App'
 import { setMockSession } from '../mocks/handlers'
+import ProtectedRoute from '../routes/ProtectedRoute'
 import { safeRedirect } from '../routes/redirect'
+import { useAuthStore } from '../stores/authStore'
 
 function Where() {
   const l = useLocation()
@@ -34,40 +37,57 @@ describe('LoginPage', () => {
     expect(await screen.findByText('아이디 또는 비밀번호가 올바르지 않습니다.')).toHaveAttribute('role', 'alert')
   })
 
-  it('성공하면 redirect 경로로 이동하고 마이페이지 정보를 보여 준다', async () => {
-    renderApp('/login?redirect=%2Fmypage')
+  it('성공하면 홈으로 이동하고 헤더에 사용자 이름을 보여 준다', async () => {
+    renderApp('/login')
     await userEvent.type(await screen.findByLabelText('아이디'), 'user01')
     await userEvent.type(screen.getByLabelText('비밀번호'), 'Passw0rd!')
     await userEvent.click(screen.getByRole('button', { name: '로그인' }))
-    await waitFor(() => expect(screen.getByTestId('loc')).toHaveTextContent('/mypage'))
-    expect(await screen.findByText('user01@example.com')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByTestId('loc')).toHaveTextContent(/^\/$/))
+    expect(await screen.findByText('홍길동님 환영합니다')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '로그아웃' })).toBeInTheDocument()
   })
 })
 
+// 보호 화면이 아직 없으므로 테스트 전용 라우트로 ProtectedRoute 를 검증한다
+function Bootstrap() {
+  const bootstrap = useAuthStore((s) => s.bootstrap)
+  useEffect(() => {
+    void bootstrap()
+  }, [bootstrap])
+  return null
+}
+
+const renderProtected = (path: string) =>
+  render(
+    <MemoryRouter initialEntries={[path]}>
+      <Bootstrap />
+      <Routes>
+        <Route path="login" element={<p>로그인 화면</p>} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="secret" element={<p>보호 화면</p>} />
+        </Route>
+      </Routes>
+      <Where />
+    </MemoryRouter>,
+  )
+
 describe('ProtectedRoute', () => {
-  it('비로그인으로 /mypage 접근 시 /login?redirect=%2Fmypage 로 이동', async () => {
-    renderApp('/mypage')
-    await waitFor(() => expect(screen.getByTestId('loc')).toHaveTextContent('/login?redirect=%2Fmypage'))
+  it('비로그인으로 보호 화면 접근 시 /login?redirect= 로 이동', async () => {
+    renderProtected('/secret')
+    await waitFor(() => expect(screen.getByTestId('loc')).toHaveTextContent('/login?redirect=%2Fsecret'))
   })
 
-  it('세션 복구(bootstrap) 후 보호 화면을 보여 주고 빈 상태 문구를 표시', async () => {
+  it('세션 복구(bootstrap) 후 보호 화면을 보여 준다', async () => {
     setMockSession(true)
-    renderApp('/cart')
-    expect(await screen.findByText('장바구니가 비어 있습니다.')).toBeInTheDocument()
-    expect(screen.getByTestId('loc')).toHaveTextContent('/cart')
-  })
-
-  it('구매하기는 501 서버 메시지를 표시', async () => {
-    setMockSession(true)
-    renderApp('/checkout')
-    await userEvent.click(await screen.findByRole('button', { name: '구매하기' }))
-    expect(await screen.findByText('준비 중인 기능입니다.')).toBeInTheDocument()
+    renderProtected('/secret')
+    expect(await screen.findByText('보호 화면')).toBeInTheDocument()
+    expect(screen.getByTestId('loc')).toHaveTextContent('/secret')
   })
 })
 
 describe('safeRedirect', () => {
   it('내부 경로만 허용한다', () => {
-    expect(safeRedirect('/orders')).toBe('/orders')
+    expect(safeRedirect('/secret')).toBe('/secret')
     expect(safeRedirect('//evil.com')).toBe('/')
     expect(safeRedirect('https://evil.com')).toBe('/')
     expect(safeRedirect('/\\evil.com')).toBe('/')

@@ -19,26 +19,6 @@ export interface LoginRequest {
   password: string
 }
 
-export interface UserMe {
-  userId: string
-  userName: string
-  gender: string
-  birth: string
-  email: string
-  phone: string
-  zipCode: string
-  addr: string
-  addrDtl: string | null
-  role: string
-  roleName: string | null
-  createAt: string | null
-}
-
-export interface ListResponse {
-  items: unknown[]
-  totalCount: number
-}
-
 export type ErrorCode =
   | 'VALIDATION_ERROR'
   | 'INVALID_CREDENTIALS'
